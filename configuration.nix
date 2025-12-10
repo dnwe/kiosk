@@ -3,6 +3,13 @@
 {
   nixpkgs.hostPlatform = lib.mkDefault "aarch64-linux";
 
+  nixpkgs.overlays = [
+    (final: super: {
+      makeModulesClosure = x:
+        super.makeModulesClosure (x // { allowMissing = true; });
+    })
+  ];
+
   users.users.kiosk = {
     isNormalUser = true;
     createHome = true;
