@@ -12,6 +12,9 @@
       modules = [
         ./configuration.nix
         nixos-hardware.nixosModules.raspberry-pi-4
+        ({ modulesPath, ... }: {
+          imports = [ "${modulesPath}/installer/sd-card/sd-image-aarch64.nix" ];
+        })
       ];
     };
   };
