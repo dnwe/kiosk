@@ -32,3 +32,14 @@ jobs:
 
       - name: Build Raspberry Pi sdImage
         run: nix build .#nixosConfigurations.pi-kiosk.config.system.build.sdImage
+
+      - name: Get sdImage path
+        id: image
+        run: echo "image=$(ls result/sd-image/*.img)" >> "$GITHUB_OUTPUT"
+
+      - name: Create or update nightly draft release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view nightly >/dev/null 2>&1 || gh release create nightly --draft --title "Nightly" --notes "Nightly automated build"
+          gh release upload nightly "${{ steps.image.outputs.image }}" --clobber
