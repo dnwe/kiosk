@@ -6,29 +6,39 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  build-and-test:
+  build-and-release:
     runs-on: ubuntu-24.04-arm
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
 
+      - name: Compute cache key
+        id: cache-key
+        run: |
+          hash=$(sha256sum flake.nix configuration.nix | sha256sum | cut -d' ' -f1)
+          echo "key=nix-${{ runner.os }}-${{ runner.arch }}-$hash" >> "$GITHUB_OUTPUT"
+
+      - name: Restore Nix cache
+        uses: actions/cache@084e0c02b5b5a9e1e2fb3e06c87e543bcf009fda
+        with:
+          path: |
+            /nix/store
+            /nix/var/nix/db
+            /nix/var/nix/profiles
+            /nix/var/log/nix
+          key: ${{ steps.cache-key.outputs.key }}
+
       - name: Install Nix
         uses: cachix/install-nix-action@0b0e072294b088b73964f1d72dfdac0951439dbd
         with:
           nix_path: nixpkgs=channel:nixos-24.11
 
-      - name: Show Nix version
-        run: nix --version
-
       - name: Flake check
         run: nix flake check
-
-      - name: Build NixOS kiosk system
-        run: nix build .#nixosConfigurations.pi-kiosk.config.system.build.toplevel
 
       - name: Build Raspberry Pi sdImage
         run: nix build .#nixosConfigurations.pi-kiosk.config.system.build.sdImage
@@ -38,6 +48,7 @@ jobs:
         run: echo "image=$(ls result/sd-image/*.img)" >> "$GITHUB_OUTPUT"
 
       - name: Create or update nightly draft release
+        if: github.event_name == 'push'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
