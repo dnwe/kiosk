@@ -49,7 +49,7 @@ jobs:
 
       - name: Get sdImage path
         id: image
-        run: echo "image=$(ls result/sd-image/*.img)" >> "$GITHUB_OUTPUT"
+        run: echo "image=$(readlink -f result)" >> "$GITHUB_OUTPUT"
 
       - name: Create or update nightly draft release
         if: github.event_name == 'push'
