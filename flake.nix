@@ -17,5 +17,14 @@
         })
       ];
     };
+
+    packages.${system}.sd-image = pkgs.runCommand "sd-image" {} ''
+      img_dir=${self.nixosConfigurations.pi-kiosk.config.system.build.sdImage}
+      mkdir -p "$out"
+      img=$(find "$img_dir" -maxdepth 1 -type f -name '*.img*' | head -n 1)
+      cp "$img" "$out/sd-image.img"
+    '';
+
+    defaultPackage.${system} = self.packages.${system}.sd-image;
   };
 }
