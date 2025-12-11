@@ -22,9 +22,14 @@
     };
 
     packages.${system}.sd-image = pkgs.runCommand "sd-image" {} ''
+      set -eu
       img_dir=${self.nixosConfigurations.pi-kiosk.config.system.build.sdImage}
       mkdir -p "$out"
-      img=$(find "$img_dir" -maxdepth 1 -type f -name '*.img*' | head -n 1)
+      img=$(find "$img_dir/sd-image" -maxdepth 1 -type f -name '*.img*' | head -n 1)
+      if [ -z "$img" ]; then
+        echo "No .img file found in $img_dir/sd-image" >&2
+        exit 1
+      fi
       cp "$img" "$out/sd-image.img"
     '';
 
