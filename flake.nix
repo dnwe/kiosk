@@ -6,9 +6,12 @@
     nixos-hardware.url = "github:NixOS/nixos-hardware";
   };
 
-  outputs = { self, nixpkgs, nixos-hardware }: {
+  outputs = { self, nixpkgs, nixos-hardware }: let
+    system = "aarch64-linux";
+    pkgs = import nixpkgs { inherit system; };
+  in {
     nixosConfigurations.pi-kiosk = nixpkgs.lib.nixosSystem {
-      system = "aarch64-linux";
+      inherit system;
       modules = [
         ./configuration.nix
         nixos-hardware.nixosModules.raspberry-pi-4
