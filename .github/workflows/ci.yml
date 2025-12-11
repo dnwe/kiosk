@@ -45,11 +45,11 @@ jobs:
         run: nix flake check
 
       - name: Build Raspberry Pi sdImage
-        run: nix build .#nixosConfigurations.pi-kiosk.config.system.build.sdImage
+        run: nix build .#sd-image
 
       - name: Get sdImage path
         id: image
-        run: echo "image=$(readlink -f result)" >> "$GITHUB_OUTPUT"
+        run: echo "image=$(readlink -f result/sd-image.img)" >> "$GITHUB_OUTPUT"
 
       - name: Create or update nightly draft release
         if: github.event_name == 'push'
